@@ -2,17 +2,17 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
-import '../../drpc.dart';
+import '../drpc.dart';
 
-export 'hello/hello.router.dart';
+export 'data/data.dart';
 
-class RouterResolverArgs {
+class RouterHandlerArgs {
   final Map<String, dynamic> body;
   final Map<String, String> params;
   final Map<String, String> slug;
   final Map<String, dynamic> errors;
 
-  const RouterResolverArgs({
+  const RouterHandlerArgs({
     required this.body,
     required this.params,
     required this.slug,
@@ -20,8 +20,8 @@ class RouterResolverArgs {
   });
 }
 
-typedef RouterResolver<TOutput> = Future<TOutput> Function(
-  RouterResolverArgs args,
+typedef RouterHandler<TOutput> = Future<TOutput> Function(
+  RouterHandlerArgs args,
 );
 
 class RouterRequestArgs {
@@ -38,36 +38,30 @@ class RouterRequestArgs {
   });
 }
 
-typedef RouterRequest<TOutput> = Future<TOutput> Function(
-  RouterRequestArgs args,
-);
+typedef RouterRequest<TOutput> = Future<TOutput> Function([
+  RouterRequestArgs? args,
+]);
 
 class Router<TOutput> {
-  final String route;
-  final RouterQuery<TOutput> query;
-
-  Router({
-    required this.route,
-    required this.query,
-  });
-}
-
-class RouterQuery<TOutput> {
-  final RouterResolver<TOutput> resolver;
+  final RouterHandler<TOutput> handler;
   final RouterRequest<TOutput> request;
 
-  RouterQuery({
-    required this.resolver,
+  Router({
+    required this.handler,
     required this.request,
   });
 }
 
-RouterRequest<TOutput> createQueryRequest<TOutput>(
-  String route,
-  TOutput Function(Map<String, dynamic> json) fromJson,
-) {
-  return (args) async {
-    final params = args.params?.entries.map((e) {
+typedef RouterRequestOutputFromJsonAsync<TOutput> = Future<TOutput> Function(
+  Map<String, dynamic> json,
+);
+
+RouterRequest<TOutput> createRouterRequest<TOutput>({
+  required String route,
+  required RouterRequestOutputFromJsonAsync<TOutput> outputFromJsonAsync,
+}) {
+  return ([args]) async {
+    final params = args?.params?.entries.map((e) {
       return '${e.key}=${e.value}';
     }).join('&');
 
@@ -79,7 +73,7 @@ RouterRequest<TOutput> createQueryRequest<TOutput>(
       ),
     );
 
-    return fromJson(
+    return await outputFromJsonAsync(
       jsonDecode(res.body),
     );
   };

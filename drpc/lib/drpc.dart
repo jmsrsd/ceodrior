@@ -3,7 +3,8 @@
 /// More dartdocs go here.
 library drpc;
 
-export 'src/drpc.base.dart';
+export 'src/router.dart';
+export 'src/cuid.dart';
 
 const host = 'http://localhost:8080';
 
