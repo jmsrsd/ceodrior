@@ -1,9 +1,9 @@
 import 'package:drpc/drpc.dart';
 
-final addProjectRouter = Router(
+final addProjectRouter = Router<void, void>(
   route: '/api/project/add',
-  query: (json) async {},
-  mutation: (json) async {},
+  query: (body) async {},
+  mutation: (body) async {},
   resolver: (args) async {
     return () => const <String, dynamic>{};
   },

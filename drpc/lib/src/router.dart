@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
@@ -9,26 +10,23 @@ export 'data/data.dart';
 class RouterResolverArgs {
   final Map<String, dynamic> body;
   final Map<String, String> params;
-  final Map<String, String> slug;
+
   final Map<String, dynamic> errors;
 
   const RouterResolverArgs({
     required this.body,
     required this.params,
-    required this.slug,
     required this.errors,
   });
 
   RouterResolverArgs copyWith({
     Map<String, dynamic>? body,
     Map<String, String>? params,
-    Map<String, String>? slug,
     Map<String, dynamic>? errors,
   }) {
     return RouterResolverArgs(
       body: body ?? this.body,
       params: params ?? this.params,
-      slug: slug ?? this.slug,
       errors: errors ?? this.errors,
     );
   }
@@ -39,29 +37,21 @@ typedef RouterResolver = Future<Map<String, dynamic> Function()> Function(
 );
 
 class RouterFetchArgs {
-  final Map<String, dynamic>? body;
+  final FutureOr<Map<String, dynamic>> Function()? input;
   final Map<String, String>? params;
-  final Map<String, String>? slug;
-  final Map<String, dynamic>? errors;
 
   RouterFetchArgs({
-    this.body,
+    this.input,
     this.params,
-    this.slug,
-    this.errors,
   });
 
   RouterFetchArgs copyWith({
-    Map<String, dynamic>? body,
+    FutureOr<Map<String, dynamic>> Function()? input,
     Map<String, String>? params,
-    Map<String, String>? slug,
-    Map<String, dynamic>? errors,
   }) {
     return RouterFetchArgs(
-      body: body ?? this.body,
+      input: input ?? this.input,
       params: params ?? this.params,
-      slug: slug ?? this.slug,
-      errors: errors ?? this.errors,
     );
   }
 }
@@ -70,13 +60,13 @@ typedef RouterFetchHandler<TOutput> = Future<TOutput> Function([
   RouterFetchArgs? args,
 ]);
 
-typedef RouterFetchFromJsonAsync<TOutput> = Future<TOutput> Function(
-  Map<String, dynamic> json,
+typedef RouterFetchOutputFromBodyAsync<TOutput> = Future<TOutput> Function(
+  Map<String, dynamic> body,
 );
 
 RouterFetchHandler<TOutput> createRouterFetchQuery<TOutput>({
   required String route,
-  required RouterFetchFromJsonAsync<TOutput> fromJsonAsync,
+  required RouterFetchOutputFromBodyAsync<TOutput> outputFromBodyAsync,
 }) {
   return ([args]) async {
     final params = args?.params?.entries.map((e) {
@@ -85,13 +75,14 @@ RouterFetchHandler<TOutput> createRouterFetchQuery<TOutput>({
 
     final res = await http.get(
       Uri.parse(
-        '$host'
-        '$route'
-        '?${params ?? ''}',
+        [
+          '$host$route',
+          params ?? '',
+        ].where((e) => e.isNotEmpty).join('?'),
       ),
     );
 
-    return await fromJsonAsync(
+    return await outputFromBodyAsync(
       jsonDecode(res.body),
     );
   };
@@ -99,12 +90,14 @@ RouterFetchHandler<TOutput> createRouterFetchQuery<TOutput>({
 
 RouterFetchHandler<TOutput> createRouterFetchMutation<TOutput>({
   required String route,
-  required RouterFetchFromJsonAsync fromJsonAsync,
+  required RouterFetchOutputFromBodyAsync outputFromBodyAsync,
 }) {
   return ([args]) async {
     final params = args?.params?.entries.map((e) {
       return '${e.key}=${e.value}';
     }).join('&');
+
+    final input = args?.input ?? () => {};
 
     final res = await http.post(
       Uri.parse(
@@ -115,10 +108,10 @@ RouterFetchHandler<TOutput> createRouterFetchMutation<TOutput>({
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: args?.body ?? {},
+      body: jsonEncode(input()),
     );
 
-    return await fromJsonAsync(
+    return await outputFromBodyAsync(
       jsonDecode(res.body),
     );
   };
@@ -138,8 +131,8 @@ class Router<TQueryOutput, TMutationOutput> {
   factory Router({
     required String route,
     required RouterResolver resolver,
-    required RouterFetchFromJsonAsync<TQueryOutput> query,
-    required RouterFetchFromJsonAsync<TMutationOutput> mutation,
+    required RouterFetchOutputFromBodyAsync<TQueryOutput> query,
+    required RouterFetchOutputFromBodyAsync<TMutationOutput> mutation,
   }) {
     return Router._(
       route: route,
@@ -159,16 +152,16 @@ class RouterFetch<TQueryOutput, TMutationOutput> {
 
   RouterFetch({
     required String route,
-    required RouterFetchFromJsonAsync<TQueryOutput> query,
-    required RouterFetchFromJsonAsync<TMutationOutput> mutation,
+    required RouterFetchOutputFromBodyAsync<TQueryOutput> query,
+    required RouterFetchOutputFromBodyAsync<TMutationOutput> mutation,
   }) {
     this.query = createRouterFetchQuery<TQueryOutput>(
       route: route,
-      fromJsonAsync: query,
+      outputFromBodyAsync: query,
     );
     this.mutation = createRouterFetchMutation(
       route: route,
-      fromJsonAsync: mutation,
+      outputFromBodyAsync: mutation,
     );
   }
 }

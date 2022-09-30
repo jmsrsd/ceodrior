@@ -4,10 +4,10 @@ export 'output/hello.router.output.dart';
 
 final helloRouter = Router(
   route: '/api/hello',
-  query: (json) async {
-    return HelloRouterOutput.fromJson(json);
+  query: (body) async {
+    return HelloRouterOutput.fromJson(body);
   },
-  mutation: (json) async {},
+  mutation: (body) async {},
   resolver: (args) async {
     return HelloRouterOutput(
       say: 'Hello, ${args.params['name']}!',
