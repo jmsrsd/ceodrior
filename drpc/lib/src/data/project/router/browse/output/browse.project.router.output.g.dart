@@ -17,5 +17,5 @@ _$_BrowseProjectRouterOutput _$$_BrowseProjectRouterOutputFromJson(
 Map<String, dynamic> _$$_BrowseProjectRouterOutputToJson(
         _$_BrowseProjectRouterOutput instance) =>
     <String, dynamic>{
-      'projects': instance.projects,
+      'projects': instance.projects.map((e) => e.toJson()).toList(),
     };
