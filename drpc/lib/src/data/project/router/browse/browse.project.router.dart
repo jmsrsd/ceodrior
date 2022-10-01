@@ -2,15 +2,19 @@ import 'package:drpc/drpc.dart';
 
 export 'output/browse.project.router.output.dart';
 
-final browseProjectRouter = Router<BrowseProjectRouterOutput, void>(
+final browseProjectRouter = Router<void, BrowseProjectRouterOutput>(
   route: '/api/project/browse',
-  query: (body) async {
-    return BrowseProjectRouterOutput.fromJson(body);
-  },
-  mutation: (body) async {},
-  resolver: (args) async {
-    return BrowseProjectRouterOutput.fromJson(
-      args.body,
-    ).toJson;
-  },
+  input: null,
+  output: RouterIO<BrowseProjectRouterOutput>(
+    encoder: (decoded) {
+      return decoded?.toJson();
+    },
+    decoder: (encoded) {
+      try {
+        return BrowseProjectRouterOutput.fromJson(encoded!);
+      } catch (e) {
+        return null;
+      }
+    },
+  ),
 );
