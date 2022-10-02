@@ -9,7 +9,7 @@ enum RouterType {
   query,
   mutation;
 
-  Future<Map<String, dynamic>?> Function(Request req) get createRequest {
+  Future<Map<String, dynamic>?> Function(Request req) get decodeRequest {
     switch (this) {
       case RouterType.query:
         return (req) async {
@@ -40,29 +40,39 @@ enum RouterType {
   }
 }
 
-Response createResponse(Map<String, dynamic>? res) {
+Response encodeResponse(Map<String, dynamic>? response) {
   return Response.ok(
-    jsonEncode(res ?? {}),
+    jsonEncode(response ?? {}),
     headers: {'Content-Type': 'application/json'},
   );
 }
 
+class RouterConfig<TInput, TOutput> {
+  final drpc.Router<TInput?, TOutput?> router;
+  final RouterType type;
+  final Future<TOutput?> Function(TInput? input) resolver;
+
+  RouterConfig({
+    required this.router,
+    required this.type,
+    required this.resolver,
+  });
+}
+
 RouterHandler createRouterHandler<TInput, TOutput>({
-  required RouterType type,
-  required drpc.Router<TInput?, TOutput?> router,
-  required Future<TOutput?> Function(TInput? input) resolver,
+  required RouterConfig<TInput, TOutput> config,
 }) {
   return (req) async {
     await Future.delayed(const Duration(milliseconds: 500));
 
     try {
-      final request = await type.createRequest(req);
-      final input = router.inputIO.decode(request);
-      final output = await resolver(input);
-      final res = router.outputIO.encode(output);
-      return createResponse(res);
+      final request = await config.type.decodeRequest(req);
+      final input = config.router.inputIO.decode(request);
+      final output = await config.resolver(input);
+      final response = config.router.outputIO.encode(output);
+      return encodeResponse(response);
     } catch (e) {
-      return createResponse(null);
+      return encodeResponse(null);
     }
   };
 }
