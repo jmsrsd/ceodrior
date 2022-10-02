@@ -204,7 +204,7 @@ final _router = (() {
 
 void main(List<String> args) async {
   // Init Hive
-  final dbPath = path.context.normalize(
+  final hivePath = path.context.normalize(
     path.absolute(
       path.join(
         path.dirname(Platform.script.path),
@@ -214,9 +214,9 @@ void main(List<String> args) async {
     ),
   );
 
-  print('DB path: $dbPath');
+  print('Hive path: $hivePath');
 
-  Hive.init(dbPath);
+  Hive.init(hivePath);
 
   // Use any available host or container IP (usually `0.0.0.0`).
   final ip = InternetAddress.anyIPv4;
