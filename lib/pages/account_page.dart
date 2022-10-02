@@ -90,9 +90,9 @@ class AccountPage extends AuthRequiredHookWidget {
 
     final helloQuery = useFuture(
       useMemoized(() {
-        return helloRouter.query.request(
-          RouterRequestArgs(
-            params: {'name': usernameController.text},
+        return helloRouter.query(
+          input: HelloRouterInput(
+            name: usernameController.text,
           ),
         );
       }, [usernameController.text]),
