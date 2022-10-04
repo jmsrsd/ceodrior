@@ -1,5 +1,6 @@
 // ignore_for_file: non_constant_identifier_names
 
+import 'package:ceodrior/utils/add_post_frame_callback.dart';
 import 'package:drpc/drpc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -16,13 +17,15 @@ void main() async {
   //       '.T4O1E2hbxN30CZuyNq5epJD5igMUDXmCDalNW_nV4E8',
   // );
 
-  runApp(MyApp(title: 'FCMS Flutter'));
+  runApp(const MyApp());
 }
 
 class MyApp extends HookWidget {
   static BuildContext? _context;
 
-  static void useContext(
+  const MyApp({super.key});
+
+  static void onContext(
     void Function(BuildContext context) callback,
   ) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -34,11 +37,8 @@ class MyApp extends HookWidget {
     });
   }
 
-  MyApp({
-    required this.title,
-  }) : super(key: ValueKey(title));
-
-  final String title;
+  static const title = 'ceodrior';
+  static const initialRoute = '/';
 
   @override
   Widget build(context) {
@@ -64,12 +64,40 @@ class MyApp extends HookWidget {
           }),
         );
       },
-      initialRoute: '/project',
-      routes: <String, WidgetBuilder>{
-        // '/': (_) => const SplashPage(),
-        // '/login': (_) => const LoginPage(),
-        // '/account': (_) => AccountPage(),
-        '/project': (_) => const ProjectPage(),
+      initialRoute: initialRoute,
+      onGenerateRoute: (settings) {
+        var route = settings.name ?? initialRoute;
+        final routing = route.split('/').where((e) => e.isNotEmpty).toList();
+        WidgetBuilder builder = (_) => const ProjectMainPage();
+        try {
+          switch (routing.first) {
+            case 'project':
+              if (routing.length > 1) {
+                final id = routing[1];
+                builder = (_) => ProjectDetailPage(id: id);
+                break;
+              }
+              throw Error();
+            default:
+              throw Error();
+          }
+        } catch (e) {
+          if (route != initialRoute) {
+            builder = (context) {
+              addPostFrameCallback(() {
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                  initialRoute,
+                  (route) => false,
+                );
+              });
+              return const SizedBox();
+            };
+          }
+        }
+        return MaterialPageRoute(
+          settings: settings,
+          builder: builder,
+        );
       },
     );
   }

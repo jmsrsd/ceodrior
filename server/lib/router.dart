@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:drpc/drpc.dart' as drpc;
 import 'package:shelf/shelf.dart';
+import 'package:shelf_router/shelf_router.dart';
 
 typedef RouterHandler = Future<Response> Function(Request req);
 
@@ -57,6 +58,17 @@ class RouterConfig<TInput, TOutput> {
     required this.type,
     required this.resolver,
   });
+
+  void configure(Router shelfRouter) {
+    final route = router.route;
+    final handler = createRouterHandler<TInput, TOutput>(config: this);
+    switch (type) {
+      case RouterType.query:
+        return shelfRouter.get(route, handler);
+      case RouterType.mutation:
+        return shelfRouter.post(route, handler);
+    }
+  }
 }
 
 RouterHandler createRouterHandler<TInput, TOutput>({
