@@ -1,8 +1,7 @@
 import 'dart:async';
 
+import 'package:drpc/drpc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-
-import '../utils/uncatch.dart';
 
 class Mutation<TInput, TOutput> {
   final bool isLoading;

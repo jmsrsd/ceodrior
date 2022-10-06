@@ -1,9 +1,9 @@
 import 'dart:async';
 
+import 'package:drpc/drpc.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
-import '../utils/cancelable_future.dart';
 import 'use_refresh.dart';
 
 QuerySnapshot<T?> useQuery<T>(

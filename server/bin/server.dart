@@ -14,7 +14,7 @@ import 'package:shelf_cors_headers/shelf_cors_headers.dart';
 import 'package:shelf_router/shelf_router.dart';
 
 // Configure routes.
-typedef ConfigureRouter = void Function(Router shelfRouter);
+typedef ConfigureRouter = void Function(Router router);
 
 void configureRouter(Router router) {
   final configures = <String, List<ConfigureRouter>>{
@@ -59,7 +59,13 @@ void configureRouter(Router router) {
           final key = drpc.cuid();
           final value = drpc.ProjectEntity(
             id: key,
-            name: Lorem.sentence(),
+            title: Lorem.sentence(),
+            author: 'John Doe',
+            content: List.generate(5, (index) {
+              return Lorem.sentence(numSentences: 5);
+            }).join('\n\n'),
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
           );
           await db.put(key, value);
           return drpc.noop();
@@ -87,7 +93,14 @@ void configureRouter(Router router) {
         resolver: (input) async {
           final id = '${input?.id}';
           final db = await projectDB();
-          final defaultProject = drpc.ProjectEntity(id: id, name: '');
+          final defaultProject = drpc.ProjectEntity(
+            id: id,
+            title: '',
+            author: '',
+            content: '',
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+          );
           return drpc.ReadProjectRouterOutput(
             project: db.get(id) ?? defaultProject,
           );
@@ -100,7 +113,12 @@ void configureRouter(Router router) {
           try {
             final project = input?.project as drpc.ProjectEntity;
             final db = await projectDB();
-            await db.put(project.id, project);
+            await db.put(
+              project.id,
+              project.copyWith(
+                updatedAt: DateTime.now(),
+              ),
+            );
           } catch (e) {
             drpc.noop();
           }

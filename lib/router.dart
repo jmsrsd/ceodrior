@@ -8,19 +8,19 @@ const initialRoute = '/';
 Route<dynamic>? router(RouteSettings settings) {
   var route = settings.name ?? initialRoute;
 
-  final routing = route.split('/').where((e) => e.isNotEmpty).toList();
+  final routing = route.split('/').where((e) {
+    return e.isNotEmpty;
+  }).toList();
 
   WidgetBuilder builder = (_) => const ProjectMainPage();
 
   try {
     switch (routing.first) {
       case 'project':
-        if (routing.length > 1) {
-          final id = routing[1];
-          builder = (_) => ProjectDetailPage(id: id);
-          break;
-        }
-        throw Error();
+        if (routing.length <= 1) throw Error();
+        final id = routing[1];
+        builder = (_) => ProjectDetailPage(id: id);
+        break;
       default:
         throw Error();
     }
@@ -28,10 +28,8 @@ Route<dynamic>? router(RouteSettings settings) {
     if (route != initialRoute) {
       builder = (context) {
         addPostFrameCallback(() {
-          Navigator.of(context).pushNamedAndRemoveUntil(
-            initialRoute,
-            (route) => false,
-          );
+          final navigator = Navigator.of(context);
+          navigator.pushNamedAndRemoveUntil(initialRoute, (route) => false);
         });
         return const SizedBox();
       };

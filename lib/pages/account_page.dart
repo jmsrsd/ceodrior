@@ -6,8 +6,6 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 
 import '../components/auth_required_hook_widget.dart';
 import '../utils/constants.dart';
-import '../utils/mutable.dart';
-import '../utils/wait_until.dart';
 
 class AccountPage extends AuthRequiredHookWidget {
   AccountPage({super.key});

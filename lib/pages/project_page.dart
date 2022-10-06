@@ -8,145 +8,184 @@ import '../hooks/use_query.dart';
 import '../hooks/use_refresh.dart';
 import '../utils/with_separator.dart';
 
-class ProjectMainPage extends HookWidget {
-  static const String title = 'Project';
+class LayoutHookBuilder extends StatelessWidget {
+  final LayoutWidgetBuilder builder;
 
-  const ProjectMainPage({super.key});
+  const LayoutHookBuilder({
+    super.key,
+    required this.builder,
+  });
 
   @override
   Widget build(context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        return HookBuilder(
-          builder: (context) {
-            final navigator = Navigator.of(context);
-
-            final theme = Theme.of(context);
-
-            final refresh = useRefresh();
-
-            final browse = useQuery(
-              [browseProjectRouter.route, refresh],
-              browseProjectRouter.query,
-            );
-
-            final add = useMutation(
-              [addProjectRouter.route],
-              addProjectRouter.mutation,
-              mutateOpts: MutateOpts<void>(
-                whenComplete: browse.refetch,
-              ),
-            );
-
-            final delete = useMutation(
-              [deleteProjectRouter.route],
-              deleteProjectRouter.mutation,
-              mutateOpts: MutateOpts<DeleteProjectRouterOutput>(
-                whenComplete: browse.refetch,
-              ),
-            );
-
-            final projects = useMemoized(() {
-              return browse.data?.projects ?? [];
-            }, [browse.data?.projects]);
-
-            final isLoading = [
-              browse.isLoading,
-              add.isLoading,
-              delete.isLoading,
-            ].reduce((v, e) => v || e);
-
-            return Scaffold(
-              appBar: AppBar(
-                actions: withSeparator(
-                  separator: const SizedBox(width: 8),
-                  children: [
-                    IconButton(
-                      onPressed: isLoading ? null : browse.refetch,
-                      icon: isLoading
-                          ? const SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(),
-                            )
-                          : const Icon(Icons.refresh_outlined),
-                    ),
-                  ],
-                ),
-                title: const Text(title),
-              ),
-              floatingActionButton: FloatingActionButton(
-                onPressed: isLoading ? null : add.mutate,
-                child: isLoading
-                    ? CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation(
-                          theme.colorScheme.surface,
-                        ),
-                      )
-                    : const Icon(Icons.add),
-              ),
-              body: Column(
-                children: [
-                  LinearProgressIndicator(
-                    value: isLoading ? null : 1,
-                  ),
-                  Expanded(
-                    child: projects.isEmpty && isLoading
-                        ? const Center(
-                            child: CircularProgressIndicator(),
-                          )
-                        : AnimatedSwitcher(
-                            key: ValueKey(projects.isEmpty && isLoading),
-                            duration: const Duration(milliseconds: 300),
-                            child: AnimatedOpacity(
-                              key: ValueKey(projects),
-                              duration: const Duration(milliseconds: 300),
-                              opacity: isLoading ? 0.33 : 1,
-                              child: GridView.builder(
-                                key: ValueKey(projects.length),
-                                gridDelegate:
-                                    SliverGridDelegateWithFixedCrossAxisCount(
-                                  childAspectRatio: 4.0 / 3.0,
-                                  crossAxisCount:
-                                      (constraints.maxWidth ~/ 360.0).clamp(
-                                    1,
-                                    double.maxFinite.truncate(),
-                                  ),
-                                  crossAxisSpacing: kToolbarHeight / 2.0,
-                                  mainAxisSpacing: kToolbarHeight / 2.0,
-                                ),
-                                controller: useMemoizedScrollController(),
-                                padding: const EdgeInsets.all(
-                                  kToolbarHeight / 2.0,
-                                ).copyWith(
-                                  bottom: kToolbarHeight,
-                                ),
-                                itemCount: projects.length,
-                                itemBuilder: (context, index) {
-                                  final project = projects.elementAt(index);
-                                  return ProjectTile(
-                                    project: project,
-                                    onTap: isLoading
-                                        ? null
-                                        : (project) {
-                                            navigator
-                                                .pushNamed(
-                                                  '/project/${project.id}',
-                                                )
-                                                .then((_) => browse.refetch());
-                                          },
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
+        return HookBuilder(builder: (context) {
+          return builder(context, constraints);
+        });
       },
+    );
+  }
+}
+
+class ProjectMainPage extends HookWidget {
+  static const title = 'Project';
+
+  const ProjectMainPage({super.key});
+
+  @override
+  Widget build(context) => LayoutHookBuilder(builder: builder);
+
+  Widget builder(
+    BuildContext context,
+    BoxConstraints constraints,
+  ) {
+    final navigator = Navigator.of(context);
+
+    final theme = Theme.of(context);
+
+    final refresh = useRefresh();
+
+    final browse = useQuery(
+      [browseProjectRouter.route, refresh],
+      browseProjectRouter.query,
+    );
+
+    final add = useMutation(
+      [addProjectRouter.route],
+      addProjectRouter.mutation,
+      mutateOpts: MutateOpts<void>(
+        whenComplete: browse.refetch,
+      ),
+    );
+
+    final delete = useMutation(
+      [deleteProjectRouter.route],
+      deleteProjectRouter.mutation,
+      mutateOpts: MutateOpts<DeleteProjectRouterOutput>(
+        whenComplete: browse.refetch,
+      ),
+    );
+
+    final projects = useMemoized(() {
+      return browse.data?.projects ?? [];
+    }, [browse.data?.projects]);
+
+    final isLoading = [
+      browse.isLoading,
+      add.isLoading,
+      delete.isLoading,
+    ].reduce((v, e) => v || e);
+
+    return Scaffold(
+      appBar: AppBar(
+        actions: withSeparator(
+          separator: const SizedBox(width: 8),
+          children: [
+            IconButton(
+              onPressed: isLoading ? null : browse.refetch,
+              icon: executeWhen(() {
+                return isLoading;
+              }, then: () {
+                return const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(),
+                );
+              }, or: () {
+                return const Icon(Icons.refresh_outlined);
+              }),
+            ),
+          ],
+        ),
+        title: const Text(title),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: isLoading ? null : add.mutate,
+        child: executeWhen(() {
+          return isLoading;
+        }, then: () {
+          return CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation(
+              theme.colorScheme.surface,
+            ),
+          );
+        }, or: () {
+          return const Icon(Icons.add);
+        }),
+      ),
+      body: Column(
+        children: [
+          LinearProgressIndicator(
+            value: isLoading ? null : 1,
+          ),
+          Expanded(
+            child: executeWhen(() {
+              return projects.isEmpty && isLoading;
+            }, then: () {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }, or: () {
+              return AnimatedSwitcher(
+                key: ValueKey(projects.isEmpty && isLoading),
+                duration: const Duration(milliseconds: 300),
+                child: execute(() {
+                  const childAspectRatio = 4.0 / 3.0;
+                  return AnimatedOpacity(
+                    key: ValueKey(projects),
+                    duration: const Duration(milliseconds: 300),
+                    opacity: isLoading ? 0.33 : 1,
+                    child: GridView.builder(
+                      key: ValueKey(projects.length),
+                      gridDelegate: execute(() {
+                        const spacing = kToolbarHeight / 2.0;
+                        return SliverGridDelegateWithFixedCrossAxisCount(
+                          childAspectRatio: childAspectRatio,
+                          crossAxisCount: execute(() {
+                            final parentWidth = constraints.maxWidth;
+                            const childWidth = 360.0;
+                            return parentWidth ~/ childWidth;
+                          }).clamp(1, double.maxFinite.truncate()),
+                          crossAxisSpacing: spacing,
+                          mainAxisSpacing: spacing,
+                        );
+                      }),
+                      controller: useMemoizedScrollController(),
+                      padding: const EdgeInsets.all(
+                        kToolbarHeight / 2.0,
+                      ).copyWith(
+                        bottom: kToolbarHeight * 4.0,
+                      ),
+                      itemCount: projects.length,
+                      itemBuilder: (context, index) {
+                        final project = projects.elementAt(index);
+                        return ProjectTile(
+                          aspectRatio: childAspectRatio,
+                          project: project,
+                          onTap: executeWhen(() {
+                            return isLoading;
+                          }, then: () {
+                            return null;
+                          }, or: () {
+                            return (project) {
+                              executeAsync(() async {
+                                return await navigator.pushNamed(
+                                  '/project/${project.id}',
+                                );
+                              }).then((_) => browse.refetch());
+                            };
+                          }),
+                        );
+                      },
+                    ),
+                  );
+                }),
+              );
+            }),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -160,7 +199,13 @@ class ProjectDetailPage extends HookWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(context) => LayoutHookBuilder(builder: builder);
+
+  Widget builder(context, constraints) {
+    final screenSize = constraints.biggest;
+
+    final theme = Theme.of(context);
+
     final navigator = Navigator.of(context);
 
     final read = useQuery(
@@ -189,14 +234,28 @@ class ProjectDetailPage extends HookWidget {
     );
 
     final project = useMemoized(() {
-      return read.data?.project ?? ProjectEntity(id: id, name: '');
+      return read.data?.project ?? defaultProjectEntity(id: id);
     }, [read.data?.project, id]);
 
-    final isLoading = read.isLoading || edit.isLoading || delete.isLoading;
+    final isLoading = [
+      read.isLoading,
+      edit.isLoading,
+      delete.isLoading,
+    ].reduce((v, e) => v || e);
 
-    final projectNameController = useTextEditingController(
-      text: project.name,
-      keys: [read.data?.project, id],
+    TextEditingController textFieldController({required String text}) {
+      return useTextEditingController(
+        text: text,
+        keys: [read.data?.project, id],
+      );
+    }
+
+    final titleController = textFieldController(
+      text: project.title,
+    );
+
+    final contentController = textFieldController(
+      text: project.content,
     );
 
     InputDecoration inputDecoration({
@@ -210,25 +269,72 @@ class ProjectDetailPage extends HookWidget {
       );
     }
 
+    Widget textField({
+      required bool enabled,
+      required String label,
+      required TextEditingController controller,
+    }) {
+      return ListTile(
+        contentPadding: EdgeInsets.zero,
+        title: Container(
+          margin: const EdgeInsets.only(
+            bottom: kToolbarHeight / 8.0,
+          ),
+          child: Text(
+            label,
+            style: theme.textTheme.caption,
+          ),
+        ),
+        subtitle: TextField(
+          enabled: enabled,
+          decoration: inputDecoration(
+            label: const Text(''),
+          ),
+          controller: executeWhen(() {
+            return isLoading && controller.text.isEmpty;
+          }, then: () {
+            return useTextEditingController(
+              text: 'Loading...',
+            );
+          }, or: () {
+            return controller;
+          }),
+          minLines: null,
+          maxLines: null,
+          maxLength: null,
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          isLoading && projectNameController.text.isEmpty
-              ? 'Loading...'
-              : projectNameController.text,
+          executeWhen(() {
+            return isLoading && titleController.text.isEmpty;
+          }, then: () {
+            return 'Loading...';
+          }, or: () {
+            return titleController.text;
+          }),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
         actions: [
           IconButton(
-            onPressed: isLoading
-                ? null
-                : () {
-                    delete.mutate(
-                      input: DeleteProjectRouterInput(id: id),
-                    );
-                  },
-            icon: const Icon(Icons.delete_outline_outlined),
+            onPressed: executeWhen(() {
+              return isLoading;
+            }, then: () {
+              return null;
+            }, or: () {
+              return () {
+                delete.mutate(
+                  input: DeleteProjectRouterInput(id: id),
+                );
+              };
+            }),
+            icon: const Icon(
+              Icons.delete_outline_outlined,
+            ),
           ),
         ],
       ),
@@ -243,69 +349,128 @@ class ProjectDetailPage extends HookWidget {
               child: SingleChildScrollView(
                 padding: const EdgeInsets.only(
                   top: kToolbarHeight / 2.0,
-                  bottom: kToolbarHeight,
+                  bottom: kToolbarHeight * 4.0,
                 ),
-                child: SizedBox(
-                  width: 360,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: withSeparator(
-                      separator: const SizedBox(
-                        height: kToolbarHeight / 2.0,
+                child: Row(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: kToolbarHeight / 2.0,
                       ),
-                      children: [
-                        TextField(
-                          enabled: false,
-                          decoration: inputDecoration(
-                            label: const Text('ID'),
+                      width: screenSize.width.clamp(0.0, 720.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: withSeparator(
+                          separator: const SizedBox(
+                            height: kToolbarHeight / 2.0,
                           ),
-                          controller: useTextEditingController(
-                            text: project.id,
-                          ),
-                        ),
-                        TextField(
-                          enabled: !isLoading,
-                          decoration: inputDecoration(
-                            label: const Text('Name'),
-                          ),
-                          controller:
-                              isLoading && projectNameController.text.isEmpty
-                                  ? useTextEditingController(text: 'Loading...')
-                                  : projectNameController,
-                          minLines: null,
-                          maxLines: null,
-                          maxLength: null,
-                        ),
-                        ElevatedButton(
-                          onPressed: isLoading
-                              ? null
-                              : () {
+                          children: [
+                            textField(
+                              enabled: !isLoading,
+                              label: 'Title',
+                              controller: titleController,
+                            ),
+                            textField(
+                              enabled: !isLoading,
+                              label: 'Content',
+                              controller: contentController,
+                            ),
+                            ElevatedButton(
+                              onPressed: executeWhen(() {
+                                return isLoading;
+                              }, then: () {
+                                return null;
+                              }, or: () {
+                                return () {
                                   edit.mutate(
                                     input: EditProjectRouterInput(
                                       project: project.copyWith(
-                                        name: projectNameController.text,
+                                        title: titleController.text,
+                                        content: contentController.text,
                                       ),
                                     ),
                                   );
-                                },
-                          child: SizedBox(
-                            height: 48,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Center(
-                                  child: Text(
-                                    isLoading ? 'LOADING...' : 'SAVE',
-                                  ),
-                                )
-                              ],
+                                };
+                              }),
+                              child: SizedBox(
+                                height: 48,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Center(
+                                      child: Text(
+                                        isLoading ? 'LOADING...' : 'SAVE',
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ),
                             ),
-                          ),
+                            const Divider(
+                              height: 2,
+                              thickness: 2,
+                            ),
+                            ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              title: Text(
+                                executeWhen(() {
+                                  return isLoading && project.id.isEmpty;
+                                }, then: () {
+                                  return 'Loading...';
+                                }, or: () {
+                                  return project.id;
+                                }),
+                              ),
+                              subtitle: const Text('ID'),
+                            ),
+                            ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              title: Text(
+                                executeWhen(() {
+                                  return isLoading && project.author.isEmpty;
+                                }, then: () {
+                                  return 'Loading...';
+                                }, or: () {
+                                  return project.author;
+                                }),
+                              ),
+                              subtitle: const Text('Author'),
+                            ),
+                            ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              title: Text(
+                                executeWhen(() {
+                                  return isLoading;
+                                }, then: () {
+                                  return 'Loading...';
+                                }, or: () {
+                                  return project.createdAt.toIso8601String();
+                                }),
+                              ),
+                              subtitle: const Text('Created at'),
+                            ),
+                            ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              title: Text(
+                                executeWhen(() {
+                                  return isLoading;
+                                }, then: () {
+                                  return 'Loading...';
+                                }, or: () {
+                                  return project.updatedAt.toIso8601String();
+                                }),
+                              ),
+                              subtitle: const Text('Updated at'),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
             ),
@@ -317,18 +482,22 @@ class ProjectDetailPage extends HookWidget {
 }
 
 class ProjectTile extends HookWidget {
+  final double aspectRatio;
   final ProjectEntity project;
   final void Function(ProjectEntity project)? onTap;
 
   const ProjectTile({
     super.key,
+    required this.aspectRatio,
     required this.project,
     this.onTap,
   });
 
   @override
   Widget build(context) {
+    final theme = Theme.of(context);
     const borderWidth = 1.0;
+    const borderRadius = kToolbarHeight / 4.0;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -337,33 +506,72 @@ class ProjectTile extends HookWidget {
           duration: const Duration(milliseconds: 300),
           opacity: 1,
           child: AspectRatio(
-            aspectRatio: 4.0 / 3.0,
+            aspectRatio: aspectRatio,
             child: Container(
               clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 color: Colors.blue[200],
                 borderRadius: BorderRadius.circular(
-                  kToolbarHeight / 4.0,
+                  borderRadius,
                 ),
               ),
               padding: const EdgeInsets.all(borderWidth),
               child: Material(
                 clipBehavior: Clip.antiAlias,
                 borderRadius: BorderRadius.circular(
-                  (kToolbarHeight / 4.0) - borderWidth,
+                  borderRadius - borderWidth,
                 ),
                 color: Colors.blue[50],
                 child: ListTile(
                   contentPadding: const EdgeInsets.all(
                     kToolbarHeight / 2.0,
                   ),
-                  title: Text(project.name),
-                  subtitle: Text(project.id),
-                  onTap: onTap == null
-                      ? null
-                      : () {
-                          onTap!(project);
-                        },
+                  title: Text(
+                    project.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  subtitle: Container(
+                    padding: const EdgeInsets.only(
+                      bottom: kToolbarHeight / 4.0,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: withSeparator(
+                        separator: const SizedBox(height: kToolbarHeight / 8.0),
+                        children: [
+                          Text(
+                            project.author,
+                            style: theme.textTheme.caption,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Expanded(
+                            child: Text(
+                              project.content,
+                              overflow: TextOverflow.fade,
+                            ),
+                          ),
+                          Text(
+                            project.id,
+                            style: theme.textTheme.caption,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  onTap: executeWhen(() {
+                    return onTap == null;
+                  }, then: () {
+                    return null;
+                  }, or: () {
+                    return () {
+                      return onTap!(project);
+                    };
+                  }),
                 ),
               ),
             ),
