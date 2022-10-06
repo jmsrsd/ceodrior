@@ -5,8 +5,16 @@ import 'package:http/http.dart' as http;
 
 export 'resolver/router.resolver.dart';
 
-typedef RouterIOEncoder<T> = Map<String, dynamic>? Function(T? decoded);
-typedef RouterIODecoder<T> = T? Function(Map<String, dynamic>? encoded);
+typedef RouterEncodedIO = Map<String, dynamic>;
+typedef RouterDecodedIO<T> = T;
+
+typedef RouterIOEncoder<T> = RouterEncodedIO? Function(
+  RouterDecodedIO<T>? decoded,
+);
+
+typedef RouterIODecoder<T> = RouterDecodedIO<T>? Function(
+  RouterEncodedIO? encoded,
+);
 
 class RouterIO<T> {
   late final RouterIOEncoder<T> encode;

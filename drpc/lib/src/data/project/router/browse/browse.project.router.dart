@@ -6,12 +6,12 @@ final browseProjectRouter = Router<void, BrowseProjectRouterOutput>(
   route: '/api/project/browse',
   input: null,
   output: RouterIO<BrowseProjectRouterOutput>(
-    encoder: (decoded) {
-      return decoded?.toJson();
-    },
+    encoder: (decoded) => decoded?.toJson(),
     decoder: (encoded) {
       try {
-        return BrowseProjectRouterOutput.fromJson(encoded!);
+        return BrowseProjectRouterOutput.fromJson(
+          encoded as RouterEncodedIO,
+        );
       } catch (e) {
         return null;
       }

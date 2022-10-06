@@ -4,12 +4,12 @@ export 'input/edit.project.router.input.dart';
 final editProjectRouter = Router<EditProjectRouterInput, void>(
   route: '/api/project/edit',
   input: RouterIO<EditProjectRouterInput>(
-    encoder: (decoded) {
-      return decoded?.toJson();
-    },
+    encoder: (decoded) => decoded?.toJson(),
     decoder: (encoded) {
       try {
-        return EditProjectRouterInput.fromJson(encoded!);
+        return EditProjectRouterInput.fromJson(
+          encoded as RouterEncodedIO,
+        );
       } catch (e) {
         return null;
       }

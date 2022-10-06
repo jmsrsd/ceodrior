@@ -6,24 +6,24 @@ final readProjectRouter =
     Router<ReadProjectRouterInput, ReadProjectRouterOutput>(
   route: '/api/project/read',
   input: RouterIO<ReadProjectRouterInput>(
-    encoder: (decoded) {
-      return decoded?.toJson();
-    },
+    encoder: (decoded) => decoded?.toJson(),
     decoder: (encoded) {
       try {
-        return ReadProjectRouterInput.fromJson(encoded!);
+        return ReadProjectRouterInput.fromJson(
+          encoded as RouterEncodedIO,
+        );
       } catch (e) {
         return null;
       }
     },
   ),
   output: RouterIO<ReadProjectRouterOutput>(
-    encoder: (decoded) {
-      return decoded?.toJson();
-    },
+    encoder: (decoded) => decoded?.toJson(),
     decoder: (encoded) {
       try {
-        return ReadProjectRouterOutput.fromJson(encoded!);
+        return ReadProjectRouterOutput.fromJson(
+          encoded as RouterEncodedIO,
+        );
       } catch (e) {
         return null;
       }

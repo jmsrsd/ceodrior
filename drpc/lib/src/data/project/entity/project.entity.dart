@@ -7,7 +7,11 @@ part 'project.entity.g.dart';
 class ProjectEntity with _$ProjectEntity {
   factory ProjectEntity({
     required String id,
-    required String name,
+    required String title,
+    required String author,
+    required String content,
+    required DateTime createdAt,
+    required DateTime updatedAt,
   }) = _ProjectEntity;
 
   factory ProjectEntity.fromJson(Map<String, dynamic> json) =>

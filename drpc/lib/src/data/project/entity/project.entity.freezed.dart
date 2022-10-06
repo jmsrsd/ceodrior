@@ -21,7 +21,11 @@ ProjectEntity _$ProjectEntityFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$ProjectEntity {
   String get id => throw _privateConstructorUsedError;
-  String get name => throw _privateConstructorUsedError;
+  String get title => throw _privateConstructorUsedError;
+  String get author => throw _privateConstructorUsedError;
+  String get content => throw _privateConstructorUsedError;
+  DateTime get createdAt => throw _privateConstructorUsedError;
+  DateTime get updatedAt => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -34,7 +38,13 @@ abstract class $ProjectEntityCopyWith<$Res> {
   factory $ProjectEntityCopyWith(
           ProjectEntity value, $Res Function(ProjectEntity) then) =
       _$ProjectEntityCopyWithImpl<$Res>;
-  $Res call({String id, String name});
+  $Res call(
+      {String id,
+      String title,
+      String author,
+      String content,
+      DateTime createdAt,
+      DateTime updatedAt});
 }
 
 /// @nodoc
@@ -49,17 +59,37 @@ class _$ProjectEntityCopyWithImpl<$Res>
   @override
   $Res call({
     Object? id = freezed,
-    Object? name = freezed,
+    Object? title = freezed,
+    Object? author = freezed,
+    Object? content = freezed,
+    Object? createdAt = freezed,
+    Object? updatedAt = freezed,
   }) {
     return _then(_value.copyWith(
       id: id == freezed
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
               as String,
-      name: name == freezed
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
+      title: title == freezed
+          ? _value.title
+          : title // ignore: cast_nullable_to_non_nullable
               as String,
+      author: author == freezed
+          ? _value.author
+          : author // ignore: cast_nullable_to_non_nullable
+              as String,
+      content: content == freezed
+          ? _value.content
+          : content // ignore: cast_nullable_to_non_nullable
+              as String,
+      createdAt: createdAt == freezed
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      updatedAt: updatedAt == freezed
+          ? _value.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
     ));
   }
 }
@@ -71,7 +101,13 @@ abstract class _$$_ProjectEntityCopyWith<$Res>
           _$_ProjectEntity value, $Res Function(_$_ProjectEntity) then) =
       __$$_ProjectEntityCopyWithImpl<$Res>;
   @override
-  $Res call({String id, String name});
+  $Res call(
+      {String id,
+      String title,
+      String author,
+      String content,
+      DateTime createdAt,
+      DateTime updatedAt});
 }
 
 /// @nodoc
@@ -88,17 +124,37 @@ class __$$_ProjectEntityCopyWithImpl<$Res>
   @override
   $Res call({
     Object? id = freezed,
-    Object? name = freezed,
+    Object? title = freezed,
+    Object? author = freezed,
+    Object? content = freezed,
+    Object? createdAt = freezed,
+    Object? updatedAt = freezed,
   }) {
     return _then(_$_ProjectEntity(
       id: id == freezed
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
               as String,
-      name: name == freezed
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
+      title: title == freezed
+          ? _value.title
+          : title // ignore: cast_nullable_to_non_nullable
               as String,
+      author: author == freezed
+          ? _value.author
+          : author // ignore: cast_nullable_to_non_nullable
+              as String,
+      content: content == freezed
+          ? _value.content
+          : content // ignore: cast_nullable_to_non_nullable
+              as String,
+      createdAt: createdAt == freezed
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      updatedAt: updatedAt == freezed
+          ? _value.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
     ));
   }
 }
@@ -106,7 +162,13 @@ class __$$_ProjectEntityCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$_ProjectEntity implements _ProjectEntity {
-  _$_ProjectEntity({required this.id, required this.name});
+  _$_ProjectEntity(
+      {required this.id,
+      required this.title,
+      required this.author,
+      required this.content,
+      required this.createdAt,
+      required this.updatedAt});
 
   factory _$_ProjectEntity.fromJson(Map<String, dynamic> json) =>
       _$$_ProjectEntityFromJson(json);
@@ -114,11 +176,19 @@ class _$_ProjectEntity implements _ProjectEntity {
   @override
   final String id;
   @override
-  final String name;
+  final String title;
+  @override
+  final String author;
+  @override
+  final String content;
+  @override
+  final DateTime createdAt;
+  @override
+  final DateTime updatedAt;
 
   @override
   String toString() {
-    return 'ProjectEntity(id: $id, name: $name)';
+    return 'ProjectEntity(id: $id, title: $title, author: $author, content: $content, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -127,7 +197,11 @@ class _$_ProjectEntity implements _ProjectEntity {
         (other.runtimeType == runtimeType &&
             other is _$_ProjectEntity &&
             const DeepCollectionEquality().equals(other.id, id) &&
-            const DeepCollectionEquality().equals(other.name, name));
+            const DeepCollectionEquality().equals(other.title, title) &&
+            const DeepCollectionEquality().equals(other.author, author) &&
+            const DeepCollectionEquality().equals(other.content, content) &&
+            const DeepCollectionEquality().equals(other.createdAt, createdAt) &&
+            const DeepCollectionEquality().equals(other.updatedAt, updatedAt));
   }
 
   @JsonKey(ignore: true)
@@ -135,7 +209,11 @@ class _$_ProjectEntity implements _ProjectEntity {
   int get hashCode => Object.hash(
       runtimeType,
       const DeepCollectionEquality().hash(id),
-      const DeepCollectionEquality().hash(name));
+      const DeepCollectionEquality().hash(title),
+      const DeepCollectionEquality().hash(author),
+      const DeepCollectionEquality().hash(content),
+      const DeepCollectionEquality().hash(createdAt),
+      const DeepCollectionEquality().hash(updatedAt));
 
   @JsonKey(ignore: true)
   @override
@@ -153,7 +231,11 @@ class _$_ProjectEntity implements _ProjectEntity {
 abstract class _ProjectEntity implements ProjectEntity {
   factory _ProjectEntity(
       {required final String id,
-      required final String name}) = _$_ProjectEntity;
+      required final String title,
+      required final String author,
+      required final String content,
+      required final DateTime createdAt,
+      required final DateTime updatedAt}) = _$_ProjectEntity;
 
   factory _ProjectEntity.fromJson(Map<String, dynamic> json) =
       _$_ProjectEntity.fromJson;
@@ -161,7 +243,15 @@ abstract class _ProjectEntity implements ProjectEntity {
   @override
   String get id;
   @override
-  String get name;
+  String get title;
+  @override
+  String get author;
+  @override
+  String get content;
+  @override
+  DateTime get createdAt;
+  @override
+  DateTime get updatedAt;
   @override
   @JsonKey(ignore: true)
   _$$_ProjectEntityCopyWith<_$_ProjectEntity> get copyWith =>
